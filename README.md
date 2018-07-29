@@ -1,5 +1,7 @@
 **Work in progress. It works, but it's ugly and badly documented!**
 
+[![Build Status](https://travis-ci.com/sdenel/tiny-static-web-server.svg?branch=master)](https://travis-ci.com/sdenel/tiny-static-web-server)
+
 A particularly small and fast static web server, written in Rust, aimed for containerization.
 * Aimed to be used with a light Docker image (for example with a [distroless image](https://github.com/GoogleContainerTools/distroless), the size of the full image is around ~10Mb)
 * Aimed to be fast:
