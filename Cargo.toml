@@ -1,0 +1,13 @@
+[package]
+name = "tiny-static-web-server"
+version = "0.1.0"
+authors = ["sdenel"]
+
+[dependencies]
+hyper = "0.12"
+futures = "0.1"
+http = "0.1.7"
+
+[profile.release]
+lto = true
+panic = 'abort'
