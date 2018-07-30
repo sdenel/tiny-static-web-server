@@ -10,4 +10,4 @@ deploy:
   skip_cleanup: true
   on:
     repo: sdenel/tiny-static-web-server
-    tags: true
+    branch: master
