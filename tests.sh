@@ -5,16 +5,25 @@ echo "Building"
 ./build.sh
 
 echo "Starting tiny-static-web-server ."
-./target/release/tiny-static-web-server . &
+rm -rf tmp
+mkdir tmp
+echo "Hello world!" > tmp/index.html
+./target/release/tiny-static-web-server tmp/ &
 PID=$!
+sleep 1
 
-echo "curl http://localhost:8080/README.md..."
-README_DOWNLOADED=`curl http://localhost:8080/README.md`
-if [[ "$README_DOWNLOADED" != "`cat README.md`" ]]
+echo "curl http://localhost:8080/..."
+DOWNLOADED=`curl http://localhost:8080/`
+if [[ "$DOWNLOADED" != "Hello world!" ]]
 then
-  echo -e "\nReadme downloaded was different than Readme.md!"
+    echo -e "\"$DOWNLOADED\" is not equal to \"Hello world!\""
+    echo "Killing the server..."
+    kill $PID
+    exit 1
+else
+    echo "Killing the server..."
+    kill $PID
 fi
 
-echo "Killing the server..."
-kill $PID
+
 

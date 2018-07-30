@@ -8,6 +8,7 @@ hyper = "0.12"
 futures = "0.1"
 http = "0.1.7"
 lazy_static = "1.0"
+rust-crypto = "0.2.36"
 
 [profile.release]
 lto = true
