@@ -7,7 +7,8 @@ deploy:
   provider: releases
   api_key:
     secure: AjW6nyHEe/s58QjgRh7cQUQ2lCIPT38n0GN9hzTQNG741oYGJR9dEOTH7/nOBx+CdR1IHLC/Uzn9OMMCMcuPirgkSaij1L5l4S+R7yE5oRW0tKCZ+zNl+OLNJqOObrm5oHW1qt8xhkMPIbA4Yt2WEoT842RKwtthmemtyrEA6sNMR8xk8+OOfh1DnpLehir/x4HnSaRXweeRF3kBpjPZmAo7X1ilHvHJ73y2oEdkAWOmLcpPZdWtOhA8aPNitU5RWnY9Bdc5DkettEODZvzPK9giqpDXHPP6UfzQc4nMBUVPGliCUUlhqAScS53DcgRwTfH8muUpHzfGtOnd0KanNYodfU4v3KlAD3pU4aty5fhYGlYYmE+wZCXu4nZXLwWiQuq38BChn7+3ESsMM/sUxBt0wKzJZb3rI9gnQO27E1ms2ZLEQfPsZ3zGWrE/EIfsP1/0II/qTda6mv3QNv7ngjVdbHDmbpx09nxjNU1yK/sVDHPeEAmSEYRprHBUnWZd37lElG0iu9Xb41Whfn6wN58HldvrBu4UYFShQyskQP7E2amGc6zpvtYNO9OYeWYi7z0t9MI4xKVBBh/8V3TOyRyvMpsGhow1Duct9etR7P4yx25VIck9t0qw7xrOUoIHNv8v7JfPDczsSqfe9E7+a35t9XPAmN7KMnQytCDiEC4=
-  file: target/release/tiny-static-web-server
+  file:
+    - "./target/release/tiny-static-web-server"
   on:
     repo: sdenel/tiny-static-web-server
     branch: master
