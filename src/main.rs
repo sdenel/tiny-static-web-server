@@ -23,41 +23,76 @@ use std::sync::Mutex;
 use std::env;
 use std::fs;
 use std::path::PathBuf;
+use hyper::HeaderMap;
 
 fn build_served_directory() -> PathBuf {
     let args: Vec<String> = env::args().collect();
     fs::canonicalize(PathBuf::from(&args[1])).unwrap()
 }
 
+struct CachedFile {
+    status_code: u16,
+    content: Vec<u8>,
+}
+
 lazy_static! {
-    static ref CACHE_MAP: Mutex<HashMap<String, Vec<u8>>> = Mutex::new(HashMap::new());
+    static ref CACHE_MAP: Mutex<HashMap<String, CachedFile>> = Mutex::new(HashMap::new());
     static ref SERVED_DIRECTORY: Mutex<PathBuf> = Mutex::new(build_served_directory());
 }
 
+fn accept_gzip(headers: &HeaderMap<HeaderValue>) -> bool {
+    let accept_encoding = headers.get("Accept-Encoding");
+    if accept_encoding.is_none() {
+        return false;
+    }
+    accept_encoding.unwrap().to_str().unwrap().contains("gzip")
+}
 
 fn build_response(req: Request<Body>) -> Response<Body> {
+    // TODO: Sending gzip files is still a work in progress
+    println!("accept gzip: {}", accept_gzip(req.headers()));
     let method = req.method();
     let path = req.uri().path().trim_left_matches('/');
     println!("{} {}", method, path);
     let mime = build_mime(&path);
-    let f = get_file(path.to_string());
-    let mut r = Response::new(Body::from(f));
-    r.headers_mut().insert(CONTENT_TYPE, HeaderValue::from_str(&mime).unwrap());
-    r
+    let _ = get_file(path.to_string());
+    let cache_map = CACHE_MAP.lock().unwrap();
+    let f = cache_map.get(&path.to_string()).unwrap().clone();
+    let response: Response<Body> = Response::builder()
+        .status(f.status_code)
+        .header(CONTENT_TYPE, HeaderValue::from_str(&mime).unwrap())
+        .body(Body::from(f.content.clone()))
+        .unwrap();
+    response
 }
 
-fn get_file(f: String) -> Vec<u8> {
+fn get_file(f: String) {
     let mut cache_map = CACHE_MAP.lock().unwrap();
     if !cache_map.contains_key(&f) {
         let mut path = SERVED_DIRECTORY.lock().unwrap().clone();
         path.push(&f);
-        let mut file = File::open(&f).expect("file not found");
+        // TODO: this is a possible vector attack, as it can create a memory leak
+        if !path.exists() {
+            cache_map.insert(f.clone(),
+                             CachedFile {
+                                 status_code: 404,
+                                 content: String::from("Not found!").as_bytes().to_vec(),
+                             });
+            return;
+        }
+        let mut file = File::open(path).expect("file not found");
         let mut buf: Vec<u8> = Vec::new();
         let _ = file.read_to_end(&mut buf);
-        cache_map.insert(f.clone(), buf);
+        cache_map.insert(
+            f.clone(),
+            CachedFile {
+                status_code: 200,
+                content: buf,
+            },
+        );
     }
-    cache_map.get(&f).unwrap().to_vec()
 }
+
 
 fn build_mime(path: &str) -> String {
     if path.ends_with(".html") {
