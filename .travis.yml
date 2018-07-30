@@ -2,12 +2,12 @@ language: rust
 rust:
 - stable
 script:
-  - ./tests.sh
+- "./tests.sh"
 deploy:
   provider: releases
-  file:
-  - target/release/tiny-static-web-server
-  skip_cleanup: true
+  api_key:
+    secure: tRGdTHdTgKKHJoOqYWgEQ+k/wAl9sqoUHFtqGHd5VlxzfWlnXJbfEj0eFrtnMI7xQuxqNWKKYPL6enO5ZoHeiwMed+syr+rxXVSfX8LsgK911QHGSeZNOriZvzp2j1eCo2E+sLQZFDlAaijlJANuQY/LPRAPJHoOqD+2t7W9NEbLI2DkFISfzTrR2+8zZRBb0/TaQKv5QBaJJ1lPU6ru8tNeS3VpFdkcFrJ4qdKjf4Zj7nbibOkzAva0iRcvOmAAjzchT/Zg5xWdGAwbZfCBQTqE772TrSXQItv7UgExlc15/cB4GXJvh2Nrw+hyl+MITwuzxJeNq9dz0anpkYQxy0I3qfupG2LwHp74ZhATHaq3C2wptAxoG2+x7sW8saQLf3uhKLKRETnxaAQsFD6CN5xeYnXybtFGC8NiN90Lpt89wqMGcZYwvOTX60FjXE866Ol5WVjsJ7xVyLNXruV2V6v24g+wZ0KsvYCuHJ5lrH0jqwaLQMLRMOd2kCjQHmy4lA00nnxh4viiaNBNnCh1Mfj7YOAU0AHNF6rit+0pRE/Puu6DuZXTxFvjduqoorwZ4cDuQbMCJZOck3+1JD4nbQtbBBNiZAXFCZYFXZg0VD2zupsykIuA+DMvbS/6vO7yEQmJKQDfTUuqg/Fe4Z43cJlvKJdhYbKZ7MsuEvsA/o8=
+  file: target/release/tiny-static-web-server
   on:
     repo: sdenel/tiny-static-web-server
     branch: master
