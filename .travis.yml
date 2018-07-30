@@ -11,3 +11,4 @@ deploy:
     - "./target/release/tiny-static-web-server"
   on:
     repo: sdenel/tiny-static-web-server
+    all_branches: true
