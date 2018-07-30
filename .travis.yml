@@ -3,3 +3,11 @@ rust:
 - stable
 script:
   - ./tests.sh
+deploy:
+  provider: releases
+  file:
+  - target/release/tiny-static-web-server
+  skip_cleanup: true
+  on:
+    repo: sdenel/tiny-static-web-server
+    tags: true
