@@ -3,7 +3,10 @@ use std::path::PathBuf;
 /// Inspect the filename to check if it contains a hash.
 /// If it contains a hash, we will later allow the client to cache the file indefinitely.
 /// This function considers that the filename contains a hash iff:
-/// At least of the elems of filename.split('.') has a length divisible by 4, compsoed only of hexadecimal.
+/// At least of the elems of filename.split('.'):
+/// * has a length of a least 16
+/// * is divisible by 4
+/// * is composed only of hexadecimal characters.
 const HEX_CHARS: &'static [char] = &['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'];
 
 pub fn filename_contains_hash(path: &PathBuf) -> bool {
@@ -11,10 +14,11 @@ pub fn filename_contains_hash(path: &PathBuf) -> bool {
     let elems: Vec<&str> = filename.split(".").collect();
     for elem in elems {
         let elem_lowercase = elem.to_ascii_lowercase();
-        if elem.len() % 4 == 0 {
+        if elem.len() >= 16 && elem.len() % 4 == 0 {
             let x = elem_lowercase.chars();
             let is_hex = x.into_iter().all(|c| HEX_CHARS.contains(&c));
             if is_hex {
+                println!("true: {}", elem_lowercase);
                 return true;
             }
         }
@@ -57,4 +61,21 @@ mod tests {
             filename_contains_hash(&PathBuf::from("/something.1Ca40D0E3287df2e49fe/main.js"))
         );
     }
+
+    #[test]
+    fn test_filename_contains_hash5() {
+        assert_eq!(
+            false,
+            filename_contains_hash(&PathBuf::from("/www/2018/02/21/pouvoir-moment-present/feed.xml"))
+        );
+    }
+
+    #[test]
+    fn test_filename_contains_hash6() {
+        assert_eq!(
+            true,
+            filename_contains_hash(&PathBuf::from("/www/wp-content/uploads/2016/06/semi-geneve-768x432.be796a4707b4a72d1a55cf144e023ba2dcbc2c9456bab06c2264d987d6a7ed7a.jpg"))
+        );
+    }
+
 }

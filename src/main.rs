@@ -26,18 +26,21 @@ use std::env;
 use std::path::PathBuf;
 use self::crypto::digest::Digest;
 use self::crypto::sha2::Sha256;
+use http::header::ETAG;
+use http::header::IF_NONE_MATCH;
 
 mod filename_contains_hash;
 mod does_client_accept_gzip;
 mod list_files_in_dir_recursively;
 mod does_gz_version_exists;
+mod create_key;
 
 use filename_contains_hash::*;
 use does_client_accept_gzip::*;
 use list_files_in_dir_recursively::*;
 use does_gz_version_exists::*;
-use http::header::ETAG;
-use http::header::IF_NONE_MATCH;
+use create_key::*;
+
 
 struct CachedFile {
     content_type: String,
@@ -59,8 +62,14 @@ fn build_content_type(path: &PathBuf) -> String {
         String::from("text/html")
     } else if path_as_str.ends_with(".js") {
         String::from("application/javascript")
+    } else if path_as_str.ends_with(".png") {
+        String::from("image/png")
+    } else if path_as_str.ends_with(".jpg") || path_as_str.ends_with(".jpeg") {
+        String::from("image/jpeg")
     } else if path_as_str.ends_with(".css") {
         String::from("text/css")
+    } else if path_as_str.ends_with(".webp") {
+        String::from("image/webp")
     } else {
         String::from("application/octet-stream")
     }
@@ -76,22 +85,20 @@ fn build_etag(vec: &Vec<u8>) -> String {
     etag
 }
 
-
 fn build_cache_map() -> HashMap<String, CachedFile> {
     println!("Loading files in memory...");
     let mut cache_map: HashMap<String, CachedFile> = HashMap::new();
     let args: Vec<String> = env::args().collect();
     let served_directory = PathBuf::from(&args[1]);
-    let served_directory_len = served_directory.to_str().unwrap().len();
     let files = list_files_in_dir_recursively(&served_directory);
 
     for f in files {
         let body = get_file_as_bytes(&f);
-        let key: String = f.clone().into_os_string().into_string().unwrap().chars().skip(served_directory_len - 1).collect();
+        let key: String = create_key(&served_directory, &f);
         let digest = build_etag(&body);
         let has_gz_version = does_gz_version_exists(&f);
         let content_type = build_content_type(&f);
-        let cacheable = filename_contains_hash(&f);
+        let publicly_cacheable = filename_contains_hash(&f);
         println!("- {}:", f.display());
         println!(
             "    key: {}\n    \
@@ -99,13 +106,13 @@ fn build_cache_map() -> HashMap<String, CachedFile> {
                  etag: {}\n    \
                  has_gz_version: {}\n    \
                  content_type: {}\n    \
-                 cacheable: {}",
+                 publicly_cacheable: {}",
             key,
             body.len(),
             digest,
             has_gz_version,
             content_type,
-            cacheable
+            publicly_cacheable
         );
         cache_map.insert(key, CachedFile { content_type, body, etag: digest, has_gz_version });
     }

@@ -17,3 +17,12 @@ I am using this image to serve a webapp written in Angular. The purpose is to ha
 DIR="www"
 for file in `find $DIR -type f | grep -v .gz`; do gzip -9 -k -f -c "$file" > "$file.gz"; done
 ```
+
+
+# Installation
+```bash
+curl --silent -L "https://api.github.com/repos/sdenel/tiny-static-web-server/releases/latest" | \
+jq '.assets[0].browser_download_url' | \
+xargs sudo curl --silent  -L -o /usr/local/bin/tiny-static-web-server --url
+sudo chmod +x /usr/local/bin/tiny-static-web-server
+```
