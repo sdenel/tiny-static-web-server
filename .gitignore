@@ -5,3 +5,4 @@ docker-pull
 tmp/
 Cargo.lock
 target/
+tiny-static-web-server-immutable

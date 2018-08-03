@@ -20,7 +20,7 @@ curl --silent https://raw.githubusercontent.com/sdenel/docker-add-layer/master/d
 
 mkdir -p "$f/www/www/"
 echo "Copying $STATIC_DIR to $f/www/www/"
-cp -r "$STATIC_DIR" "$f/www/www/"
+cp -r "$STATIC_DIR"/* "$f/www/www/"
 for file in `find "$f/www/www/" -type f | grep -v .gz`; do
     gzip -9 -k -f -c "$file" > "$file.gz";
     OLD_SIZE=`stat --printf="%s" "$file"`
@@ -29,7 +29,5 @@ for file in `find "$f/www/www/" -type f | grep -v .gz`; do
 done
 
 # Downloading tiny-static-web-server
-./docker-pull sdenel/tiny-static-web-server "$f/base-image"
-./docker-add-layer "$f/base-image" ./$f/www/ tiny-static-web-server-immutable
-
-# Then: docker run -p8080:8080 sha256:cf647a6ca8581f931029578007eec8d24695c7cde0adf52019ee85c9a22390cf /dist/www//tiny-static-web-server /dist/www/files/
+./docker-pull index.docker.io/sdenel/tiny-static-web-server "$f/base-image"
+./docker-add-layer "$f/base-image" "$f/www/" tiny-static-web-server-immutable

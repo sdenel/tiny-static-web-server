@@ -45,6 +45,14 @@ Creating immutable images in production is a good pattern. use this script to cr
 ```bash
 ./build-immutable-image.sh THE_DIRECTORY_WITH_YOUR_FILES
 # The result image is saved in . with the name "tiny-static-web-server-immutable" 
+# Test it: docker load < tiny-static-web-server-immutable
+# docker run -p8080:8080 SHA_GIVEN_BY_THE_PREVIOUS_CMD
+```
+
+Even better, you can create an immutable image without cloning this repository:
+```bash
+curl -sL https://raw.githubusercontent.com/sdenel/tiny-static-web-server/master/build-immutable-image.sh | \
+bash /dev/stdin THE_DIRECTORY_WITH_YOUR_FILES
 ```
  
 ## To build .gz version of your files
