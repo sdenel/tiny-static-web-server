@@ -1,4 +1,7 @@
-Cargo.lock
+www/
 .idea
+docker-add-layer
+docker-pull
+tmp/
+Cargo.lock
 target/
-tmp

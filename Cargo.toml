@@ -10,6 +10,7 @@ http = "0.1.7"
 lazy_static = "1.0"
 rust-crypto = "0.2.36"
 url = "1.7.1"
+ctrlc = { version = "3.0", features = ["termination"] }
 
 [profile.release]
 lto = true

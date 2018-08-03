@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -e
+
+#!/bin/bash
+echo "=> Building the binary"
+docker run --privileged \
+  -v $(pwd):/src \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -w /src \
+  rust \
+  "./build.sh"
+
+mkdir -p www/www/
+echo "Hello, world\! Next step is to copy your files (or bind a volume) to /www" > www/www/index.html

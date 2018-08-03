@@ -11,7 +11,7 @@ const HEX_CHARS: &'static [char] = &['0', '1', '2', '3', '4', '5', '6', '7', '8'
 
 pub fn filename_contains_hash(path: &PathBuf) -> bool {
     let filename = path.file_name().unwrap().to_str().unwrap();
-    let elems: Vec<&str> = filename.split(".").collect();
+    let elems: Vec<&str> = filename.split(|c| c == '.' || c == '-').collect();
     for elem in elems {
         let elem_lowercase = elem.to_ascii_lowercase();
         if elem.len() >= 16 && elem.len() % 4 == 0 {
@@ -75,6 +75,14 @@ mod tests {
         assert_eq!(
             true,
             filename_contains_hash(&PathBuf::from("/www/wp-content/uploads/2016/06/semi-geneve-768x432.be796a4707b4a72d1a55cf144e023ba2dcbc2c9456bab06c2264d987d6a7ed7a.jpg"))
+        );
+    }
+
+    #[test]
+    fn test_filename_contains_hash7() {
+        assert_eq!(
+            true,
+            filename_contains_hash(&PathBuf::from("/assets/application-d840da5a269b3cd86c1420eeb56b3e88.js"))
         );
     }
 

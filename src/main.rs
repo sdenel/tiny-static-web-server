@@ -8,7 +8,7 @@ extern crate futures;
 extern crate hyper;
 extern crate http;
 extern crate crypto;
-
+extern crate ctrlc;
 
 use hyper::{Body, Request, Response, Server};
 use hyper::service::service_fn_ok;
@@ -28,6 +28,7 @@ use self::crypto::digest::Digest;
 use self::crypto::sha2::Sha256;
 use http::header::ETAG;
 use http::header::IF_NONE_MATCH;
+use std::process;
 
 mod filename_contains_hash;
 mod does_client_accept_gzip;
@@ -40,6 +41,7 @@ use does_client_accept_gzip::*;
 use list_files_in_dir_recursively::*;
 use does_gz_version_exists::*;
 use create_key::*;
+use std::net::TcpListener;
 
 
 struct CachedFile {
@@ -184,7 +186,11 @@ fn main() {
         .map_err(|e| eprintln!("server error: {}", e));
     ;
 
-    println!("Listening on http://{}", addr);
+    ctrlc::set_handler(move || {
+        println!("Bye!");
+        process::exit(0x0);
+    }).expect("Error setting Ctrl-C handler");
 
+    println!("Listening on http://{}", addr);
     hyper::rt::run(server);
 }
