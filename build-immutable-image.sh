@@ -29,7 +29,6 @@ for file in `find "$f/www/www/" -type f | grep -v .gz`; do
 done
 
 # Downloading tiny-static-web-server
-echo "$f/docker-pull"
 $f/docker-pull index.docker.io/sdenel/tiny-static-web-server "$f/base-image"
 $f/docker-add-layer "$f/base-image" "$f/www/" tiny-static-web-server-immutable
 
