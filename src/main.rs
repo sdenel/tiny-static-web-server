@@ -29,8 +29,12 @@ use self::crypto::sha2::Sha256;
 use http::header::ETAG;
 use http::header::IF_NONE_MATCH;
 use std::process;
+<<<<<<< HEAD
 use std::collections::HashSet;
 use std::iter::FromIterator;
+=======
+use std::io::Write;
+>>>>>>> First try with sockets
 
 mod filename_contains_hash;
 mod does_client_accept_gzip;
@@ -44,7 +48,16 @@ use does_client_accept_gzip::*;
 use list_files_in_dir_recursively::*;
 use does_gz_version_exists::*;
 use create_key::*;
+<<<<<<< HEAD
 use path_to_key::*;
+=======
+use std::net::TcpListener;
+use std::net::TcpStream;
+use std::str::from_utf8;
+use std::thread;
+use std::time::Duration;
+
+>>>>>>> First try with sockets
 
 struct CachedFile {
     content_type: String,
@@ -184,25 +197,48 @@ fn build_response(req: Request<Body>) -> Response<Body> {
     }
 }
 
+fn handle_client(mut stream: &TcpStream) {
+    println!("yop");
+//    let mut buf: Vec<u8> = vec![500];
+    let mut buf = [0u8; 8192]; // TODO: reuse it
+    let r = stream.read(&mut buf);
+    println!("{}", r.unwrap());
+    println!("s: {}", from_utf8(&buf).unwrap());
+    let is_get = buf[0] == b'G' && buf[1] == b'E' && buf[2] == b'T';
+    if !is_get {
+        stream.write(b"HTTP/1.1 405 Method Not Allowed\r\n");
+        return;
+    }
+        else {
+            stream.write(b"HTTP/1.1 200 OK\r\nContent-Length: 14\r\n\nHello, world!\n");
+            return;
+        }
+    // Regarder https://doc.rust-lang.org/std/net/struct.TcpStream.html#method.set_nonblocking
+}
 
 const SIGNATURE: &'static str = env!("SIGNATURE");
 fn main() {
-    println!("Starting tiny-static-web-server {}", SIGNATURE);
-    let _ = CACHE_MAP.lock(); // trigger init
-    let _ = CACHE_MAP_KEYS.lock();
+//    println!("Starting tiny-static-web-server {}", SIGNATURE);
+//    let _ = CACHE_MAP.lock(); // trigger init
+//    let _ = CACHE_MAP_KEYS.lock();
+//
+//    let addr = "0.0.0.0:8080".parse().unwrap();
+//
+//    let server = Server::bind(&addr)
+//        .serve(|| service_fn_ok(|x| build_response(x)))
+//        .map_err(|e| eprintln!("server error: {}", e));
+//    ;
+//
+//    ctrlc::set_handler(move || {
+//        println!("Bye!");
+//        process::exit(0x0);
+//    }).expect("Error setting Ctrl-C handler");
 
-    let addr = "0.0.0.0:8080".parse().unwrap();
+    let listener = TcpListener::bind("0.0.0.0:8090").unwrap();
 
-    let server = Server::bind(&addr)
-        .serve(|| service_fn_ok(|x| build_response(x)))
-        .map_err(|e| eprintln!("server error: {}", e));
-    ;
-
-    ctrlc::set_handler(move || {
-        println!("Bye!");
-        process::exit(0x0);
-    }).expect("Error setting Ctrl-C handler");
-
-    println!("Listening on http://{}", addr);
-    hyper::rt::run(server);
+    // accept connections and process them serially
+    for stream in listener.incoming() {
+        let mut s = stream.unwrap();
+        handle_client(&mut s);
+    }
 }
