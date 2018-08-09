@@ -56,6 +56,7 @@ use std::net::TcpStream;
 use std::str::from_utf8;
 use std::thread;
 use std::time::Duration;
+use std::io;
 
 >>>>>>> First try with sockets
 
@@ -198,21 +199,28 @@ fn build_response(req: Request<Body>) -> Response<Body> {
 }
 
 fn handle_client(mut stream: &TcpStream) {
-    println!("yop");
+    stream.set_nonblocking(true).expect("set_nonblocking call failed");
 //    let mut buf: Vec<u8> = vec![500];
-    let mut buf = [0u8; 8192]; // TODO: reuse it
-    let r = stream.read(&mut buf);
-    println!("{}", r.unwrap());
-    println!("s: {}", from_utf8(&buf).unwrap());
-    let is_get = buf[0] == b'G' && buf[1] == b'E' && buf[2] == b'T';
-    if !is_get {
-        stream.write(b"HTTP/1.1 405 Method Not Allowed\r\n");
-        return;
-    }
-        else {
-            stream.write(b"HTTP/1.1 200 OK\r\nContent-Length: 14\r\n\nHello, world!\n");
+    let mut buf = [0u8; 2048]; // TODO: reuse it
+    match stream.read(&mut buf) {
+        Ok(r) => {
+            println!("{}", r);
+            println!("s: {}", from_utf8(&buf).unwrap());
+            let is_get = buf[0] == b'G' && buf[1] == b'E' && buf[2] == b'T';
+            if !is_get {
+                stream.write(b"HTTP/1.1 405 Method Not Allowed\r\n");
+                return;
+            } else {
+                stream.write(b"HTTP/1.1 200 OK\r\nContent-Length: 14\r\n\nHello, world!\n");
+                return;
+            }
+        }
+        Err(ref e) if e.kind() == io::ErrorKind::WouldBlock => {
+            stream.write(b"HTTP/1.1 413 Request Entity Too Large\r\n");
             return;
         }
+        Err(e) => panic!("encountered IO error: {}", e)
+    }
     // Regarder https://doc.rust-lang.org/std/net/struct.TcpStream.html#method.set_nonblocking
 }
 
@@ -229,7 +237,8 @@ fn main() {
 //        .map_err(|e| eprintln!("server error: {}", e));
 //    ;
 //
-//    ctrlc::set_handler(move || {
+//    ctrlc::set_handler(m
+// ove || {
 //        println!("Bye!");
 //        process::exit(0x0);
 //    }).expect("Error setting Ctrl-C handler");
