@@ -29,20 +29,22 @@ use self::crypto::sha2::Sha256;
 use http::header::ETAG;
 use http::header::IF_NONE_MATCH;
 use std::process;
+use std::collections::HashSet;
+use std::iter::FromIterator;
 
 mod filename_contains_hash;
 mod does_client_accept_gzip;
 mod list_files_in_dir_recursively;
 mod does_gz_version_exists;
 mod create_key;
+mod path_to_key;
 
 use filename_contains_hash::*;
 use does_client_accept_gzip::*;
 use list_files_in_dir_recursively::*;
 use does_gz_version_exists::*;
 use create_key::*;
-use std::net::TcpListener;
-
+use path_to_key::*;
 
 struct CachedFile {
     content_type: String,
@@ -96,7 +98,7 @@ fn build_cache_map() -> HashMap<String, CachedFile> {
 
     for f in files {
         let body = get_file_as_bytes(&f);
-        let key: String = create_key(&served_directory, &f);
+        let key = create_key(&served_directory, &f);
         let digest = build_etag(&body);
         let has_gz_version = does_gz_version_exists(&f);
         let content_type = build_content_type(&f);
@@ -123,22 +125,27 @@ fn build_cache_map() -> HashMap<String, CachedFile> {
     cache_map
 }
 
+fn build_cache_map_keys() -> HashSet<String> {
+    // TODO: This code works, but is ugly
+    let keys_iterable = CACHE_MAP.lock().unwrap();
+    let hashset: HashSet<&String> = HashSet::from_iter(keys_iterable.keys());
+    hashset.iter().map(|x| { x.to_owned().to_owned() }).collect()
+}
 
 lazy_static! {
     static ref CACHE_MAP: Mutex<HashMap<String, CachedFile>> = Mutex::new(build_cache_map());
+    static ref CACHE_MAP_KEYS: Mutex<HashSet<String>> = Mutex::new(build_cache_map_keys());
 }
 
 fn build_response(req: Request<Body>) -> Response<Body> {
     let method = req.method();
-    let mut path = req.uri().path().to_owned();
+    let path = req.uri().path().to_owned();
     println!("{} {}", method, path);
 
-    if path.ends_with("/") {
-        path.push_str("index.html");
-    }
+    let key = path_to_key(&path, &CACHE_MAP_KEYS);
 
     let cache_map_unwrap = CACHE_MAP.lock().unwrap();
-    let cached_file_opt = cache_map_unwrap.get(&path).clone();
+    let cached_file_opt = cache_map_unwrap.get(&key).clone();
     if cached_file_opt.is_none() {
         return Response::builder()
             .status(404)
