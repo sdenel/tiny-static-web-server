@@ -185,6 +185,7 @@ fn build_response(req: Request<Body>) -> Response<Body> {
 
 fn main() {
     let _ = CACHE_MAP.lock(); // trigger init
+    let _ = CACHE_MAP_KEYS.lock();
 
     let addr = "0.0.0.0:8080".parse().unwrap();
 
