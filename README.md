@@ -10,6 +10,7 @@ A particularly small and fast static web server, written in Rust, aimed to be us
     * Sends specific cache headers when the file is expected to never change (files with a hash in their name).
     * Still to do: always redirect /index.html to /
 * Aims to be small: The size of the full Docker image is around ~10Mb.
+* Aims to be compatible with webapps: if a path does not map to a known key, and does no contain a dot, /index.html is returned. 
 # Usage
 I am using this image to serve a webapp written in Angular. The purpose is to have an immutable and light container.
 (script not read yet)
