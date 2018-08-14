@@ -1,5 +1,6 @@
 FROM gcr.io/distroless/cc
 COPY target/debug/tiny-static-web-server www /
+ENV RUST_BACKTRACE 1
 WORKDIR /
 ENTRYPOINT ["/tiny-static-web-server"]
 CMD ["/www/"]
