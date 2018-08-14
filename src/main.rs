@@ -163,7 +163,7 @@ fn build_response(req: Request<Body>) -> Response<Body> {
                 .unwrap();
         } else if does_client_accept_gzip(req.headers()) && cached_file.has_gz_version {
             // Sending gz version
-            let mut path_gz = path.to_owned();
+            let mut path_gz = key.to_owned();
             path_gz.push_str(".gz");
             let content_gz = &cache_map_unwrap.get(&path_gz).unwrap().body;
             return Response::builder()
