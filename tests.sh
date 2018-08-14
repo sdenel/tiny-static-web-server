@@ -14,6 +14,7 @@ sleep 1
 
 echo "curl http://localhost:8080/..."
 DOWNLOADED=`curl http://localhost:8080/`
+echo "$DOWNLOADED"
 if [[ "$DOWNLOADED" != "Hello world!" ]]
 then
     echo -e "\"$DOWNLOADED\" is not equal to \"Hello world!\""
