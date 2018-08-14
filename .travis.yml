@@ -1,6 +1,8 @@
 language: rust
 rust:
   - nightly
+env:
+  - SIGNATURE: something
 script:
   - cargo test
   - "./tests.sh"
