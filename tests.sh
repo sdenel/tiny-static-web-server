@@ -23,6 +23,8 @@ then
 else
     echo "Killing the server..."
     kill $PID
+    echo "All good!"
+    exit 0
 fi
 
 
