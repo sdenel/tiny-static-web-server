@@ -6,3 +6,6 @@ tmp/
 Cargo.lock
 target/
 tiny-static-web-server-immutable
+tests/bin/
+tests/node_modules/
+tests/package-lock.json

@@ -1,0 +1,107 @@
+{
+	"info": {
+		"_postman_id": "e501dc77-5266-467e-a475-729dbbf64d4c",
+		"name": "tiny-static-web-server",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "index.html (no gz)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "4b61c880-2865-434a-a82f-d8116808007b",
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Body is correct\", function () {",
+							"    pm.response.to.have.body(\"Hello world!\\n\");",
+							"});",
+							"",
+							"pm.test(\"Content-Type is present\", function () {",
+							"    pm.response.to.have.header(\"Content-Type\");",
+							"});",
+							"",
+							"pm.test(\"content-encoding is correct\", function () {",
+							"   pm.response.to.not.have.header(\"content-encoding\");",
+							"});"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"url": {
+					"raw": "http://localhost:8080/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "index2.html (gz)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "ea38d162-ce68-4ed6-a535-d12186b6cbe3",
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Body is correct\", function () {",
+							"    pm.response.to.have.body(\"Hello world!\\n\");",
+							"});",
+							"",
+							"pm.test(\"Content-Type is present\", function () {",
+							"    pm.response.to.have.header(\"Content-Type\");",
+							"});",
+							"",
+							"pm.test(\"content-encoding is correct\", function () {",
+							"   pm.response.to.have.header(\"content-encoding\");",
+							"   pm.response.to.be.header(\"content-encoding\", \"gzip\");",
+							"});"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept-Encoding",
+						"value": "gzip"
+					}
+				],
+				"body": {},
+				"url": {
+					"raw": "http://localhost:8080/index2.html",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"index2.html"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
