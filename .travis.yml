@@ -8,8 +8,9 @@ env:
     secure: bELMC9NqkTLwoxwIWdyF36ioAJDxaBuLdRXj9xbmgJQ4KMZ+IKgkgNC3YydfTv0mJwSgttOwdV8hg50KsR6GQ1rhYK8/PdZ6P8cOj1fXtGt+vg5r/rWTzlTERIAwthXaiDEPtKD4eFJCMnH2WctzR0FSRcq/ikBbVoAQdSsVMPU1m+6H9vX3fWra4JKHC89aytcTi2wlRliEcZRFLyHB9G9m4Itunvkf+mKl0LeJFfwK1MBpTPZop7Mc3e20PiE4wsa08sbwynGzG9teHO/qbhodsJ7nuGqtxBkTuyUat8LvCrTlgZ5/2GeD8LYnVjgKi7ayBPJ4CSyaBDQyEx+RUwnvdH8II+xbU+7G6/A+kIjQyFHarhTS0BHKk7u8lgm9+36/aOoj+gSjxzNTGB6L9yxoWsXYRZgdgT2ekJDp6Dl5km50lUNSxy9T0tmamfBuwzsmB320ED4P1o0l5ZcwRa9Y0n1goy5xNSkD3RDfmgMcViK48s3SmRd+cLrZYUqbhCnzf1NoBH33rQkXFJCpsQzZGUqy0h4Y4/8CafzO579Fpk+n4uEP7Mai092fm+JFR45CkqszweVpayuxm8iE7krGnhS+xiV//YbfgWZbW6Xcy6Yr9JAEsMutQp9e3a/kbFlJYYj6714DAjmlNi+MQl0Mch/pbbtZB+nOCfPqwY0=
 script:
 - cargo test
-- "cd tests && ./install-newman.sh"
-- "cd tests && ./tests.sh"
+- "cd tests"
+- "./install-newman.sh"
+- "./tests.sh"
 - "curl -H \"Content-Type: application/json\" --data '{\"build\": true}' -X POST https://registry.hub.docker.com/u/sdenel/tiny-static-web-server/trigger/$DOCKER_TOKEN/"
 deploy:
   provider: releases
