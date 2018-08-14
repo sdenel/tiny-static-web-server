@@ -126,6 +126,7 @@ fn build_cache_map() -> HashMap<String, CachedFile> {
 }
 
 fn build_cache_map_keys() -> HashSet<String> {
+    println!("Building CACHE_MAP_KEYS");
     // TODO: This code works, but is ugly
     let keys_iterable = CACHE_MAP.lock().unwrap();
     let hashset: HashSet<&String> = HashSet::from_iter(keys_iterable.keys());

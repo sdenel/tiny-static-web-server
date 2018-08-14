@@ -11,17 +11,17 @@ fi
 STATIC_DIR=$1
 
 # First export $STATIC_DIR
-f="$(mktemp -d /tmp/tiny-static-web-server.XXXXXX)"
-echo "Working in $f (will be deleted afterward if exits 0)"
+TEMP_DIR="$(mktemp -d /tmp/tiny-static-web-server.XXXXXX)"
+echo "Working in $TEMP_DIR (will be deleted afterward if exits 0)"
 
-curl --silent https://raw.githubusercontent.com/sdenel/docker-pull/master/docker-pull -o "$f/docker-pull" && chmod +x "$f/docker-pull"
-curl --silent https://raw.githubusercontent.com/sdenel/docker-add-layer/master/docker-add-layer -o "$f/docker-add-layer" && chmod +x "$f/docker-add-layer"
+curl --silent https://raw.githubusercontent.com/sdenel/docker-pull/master/docker-pull -o "$TEMP_DIR/docker-pull" && chmod +x "$TEMP_DIR/docker-pull"
+curl --silent https://raw.githubusercontent.com/sdenel/docker-add-layer/master/docker-add-layer -o "$TEMP_DIR/docker-add-layer" && chmod +x "$TEMP_DIR/docker-add-layer"
 
 
-mkdir -p "$f/www/www/"
-echo "Copying $STATIC_DIR to $f/www/www/"
-cp -r "$STATIC_DIR"/* "$f/www/www/"
-for file in `find "$f/www/www/" -type f | grep -v .gz`; do
+mkdir -p "$TEMP_DIR/www/www/"
+echo "Copying $STATIC_DIR to $TEMP_DIR/www/www/"
+cp -r "$STATIC_DIR"/* "$TEMP_DIR/www/www/"
+for file in `find "$TEMP_DIR/www/www/" -type f | grep -v .gz`; do
     gzip -9 -k -f -c "$file" > "$file.gz";
     OLD_SIZE=`stat --printf="%s" "$file"`
     NEW_SIZE=`stat --printf="%s" "$file.gz"`
@@ -29,7 +29,7 @@ for file in `find "$f/www/www/" -type f | grep -v .gz`; do
 done
 
 # Downloading tiny-static-web-server
-$f/docker-pull index.docker.io/sdenel/tiny-static-web-server "$f/base-image"
-$f/docker-add-layer "$f/base-image" "$f/www/" tiny-static-web-server-immutable
+$TEMP_DIR/docker-pull index.docker.io/sdenel/tiny-static-web-server "$TEMP_DIR/base-image"
+$TEMP_DIR/docker-add-layer "$TEMP_DIR/base-image" "$TEMP_DIR/www/" tiny-static-web-server-immutable
 
-rm -rf "$f"
+rm -rf "$TEMP_DIR"

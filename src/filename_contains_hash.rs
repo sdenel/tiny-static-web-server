@@ -18,7 +18,7 @@ pub fn filename_contains_hash(path: &PathBuf) -> bool {
             let x = elem_lowercase.chars();
             let is_hex = x.into_iter().all(|c| HEX_CHARS.contains(&c));
             if is_hex {
-                println!("true: {}", elem_lowercase);
+//                println!("true: {}", elem_lowercase);
                 return true;
             }
         }
