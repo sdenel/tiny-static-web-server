@@ -6,7 +6,7 @@ A particularly small and fast static web server, written in Rust, aimed to be us
 * Aims to be fast:
     * Files are automatically put in RAM during the first request, once and for all (served files are expected to be immutable!)
     * Sends gzip version when filename + ".gz" exists
-    * Compute sha256, put it in ETag and respond 301 if there was not change.
+    * Compute sha256, put it in ETag and respond 301 if there was no change.
     * Sends specific cache headers when the file is expected to never change (files with a hash in their name).
     * Still to do: always redirect /index.html to /
 * Aims to be small: The size of the full Docker image is around ~10Mb.

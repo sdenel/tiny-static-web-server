@@ -3,6 +3,13 @@ set -e
 rustup override set nightly
 
 #
+# Creating the signature
+#
+BRANCH=$(git branch | sed -n -e 's/^\* \(.*\)/\1/p')
+HASH=$(git rev-parse HEAD)
+export SIGNATURE="$BRANCH:$HASH"
+
+#
 # Debug
 #
 cargo build --verbose

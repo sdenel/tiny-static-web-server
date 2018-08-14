@@ -184,7 +184,10 @@ fn build_response(req: Request<Body>) -> Response<Body> {
     }
 }
 
+
+const SIGNATURE: &'static str = env!("SIGNATURE");
 fn main() {
+    println!("Starting tiny-static-web-server {}", SIGNATURE);
     let _ = CACHE_MAP.lock(); // trigger init
     let _ = CACHE_MAP_KEYS.lock();
 
