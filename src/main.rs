@@ -9,9 +9,9 @@ extern crate hyper;
 extern crate http;
 extern crate crypto;
 extern crate ctrlc;
+extern crate multiqueue;
 
-use hyper::{Body, Request, Response, Server};
-use hyper::service::service_fn_ok;
+use hyper::{Body, Request, Response};
 use futures::Future;
 
 use std::fs::File;
@@ -28,13 +28,9 @@ use self::crypto::digest::Digest;
 use self::crypto::sha2::Sha256;
 use http::header::ETAG;
 use http::header::IF_NONE_MATCH;
-use std::process;
-<<<<<<< HEAD
 use std::collections::HashSet;
 use std::iter::FromIterator;
-=======
 use std::io::Write;
->>>>>>> First try with sockets
 
 mod filename_contains_hash;
 mod does_client_accept_gzip;
@@ -48,17 +44,17 @@ use does_client_accept_gzip::*;
 use list_files_in_dir_recursively::*;
 use does_gz_version_exists::*;
 use create_key::*;
-<<<<<<< HEAD
 use path_to_key::*;
-=======
 use std::net::TcpListener;
 use std::net::TcpStream;
 use std::str::from_utf8;
 use std::thread;
-use std::time::Duration;
 use std::io;
+use multiqueue::MPMCReceiver;
+use multiqueue::MPMCSender;
+use std::sync::Arc;
+use std::net::Shutdown;
 
->>>>>>> First try with sockets
 
 struct CachedFile {
     content_type: String,
@@ -198,33 +194,38 @@ fn build_response(req: Request<Body>) -> Response<Body> {
     }
 }
 
-fn handle_client(mut stream: &TcpStream) {
-    stream.set_nonblocking(true).expect("set_nonblocking call failed");
-//    let mut buf: Vec<u8> = vec![500];
-    let mut buf = [0u8; 2048]; // TODO: reuse it
-    match stream.read(&mut buf) {
-        Ok(r) => {
-            println!("{}", r);
-            println!("s: {}", from_utf8(&buf).unwrap());
-            let is_get = buf[0] == b'G' && buf[1] == b'E' && buf[2] == b'T';
-            if !is_get {
-                stream.write(b"HTTP/1.1 405 Method Not Allowed\r\n");
-                return;
-            } else {
-                stream.write(b"HTTP/1.1 200 OK\r\nContent-Length: 14\r\n\nHello, world!\n");
-                return;
+fn handle_stream_thread(thread_id: i32, send: MPMCSender<Arc<Mutex<TcpStream>>>, reicv: MPMCReceiver<Arc<Mutex<TcpStream>>>) {
+    loop {
+        let stream = reicv.recv().unwrap();
+//        let mut stream = a;
+        println!("Thread {}, got something.", thread_id);
+        //    let mut buf: Vec<u8> = vec![500];
+        let mut buf = [0u8; 2048]; // TODO: reuse it
+        let r = stream.lock().unwrap().read(&mut buf);
+        match r {
+            Ok(r) => {
+                println!("{}", r);
+                println!("s: {}", from_utf8(&buf).unwrap());
+                let is_get = buf[0] == b'G' && buf[1] == b'E' && buf[2] == b'T';
+                if !is_get {
+                    stream.lock().unwrap().write(b"HTTP/1.1 405 Method Not Allowed\r\n");
+                } else {
+                    stream.lock().unwrap().write(b"HTTP/1.1 200 OK\r\nContent-Length: 14\r\n\nHello, world!\n");
+                }
             }
+            Err(ref e) if e.kind() == io::ErrorKind::WouldBlock => {
+                send.try_send(stream).is_ok();
+//                stream.write(b"HTTP/1.1 413 Request Entity Too Large\r\n");
+                ;
+            }
+            Err(e) => panic!("encountered IO error: {}", e)
         }
-        Err(ref e) if e.kind() == io::ErrorKind::WouldBlock => {
-            stream.write(b"HTTP/1.1 413 Request Entity Too Large\r\n");
-            return;
-        }
-        Err(e) => panic!("encountered IO error: {}", e)
+        // Regarder https://doc.rust-lang.org/std/net/struct.TcpStream.html#method.set_nonblocking
     }
-    // Regarder https://doc.rust-lang.org/std/net/struct.TcpStream.html#method.set_nonblocking
 }
 
 const SIGNATURE: &'static str = env!("SIGNATURE");
+
 fn main() {
 //    println!("Starting tiny-static-web-server {}", SIGNATURE);
 //    let _ = CACHE_MAP.lock(); // trigger init
@@ -243,11 +244,29 @@ fn main() {
 //        process::exit(0x0);
 //    }).expect("Error setting Ctrl-C handler");
 
+
+    /*
+    Essai de multiqueue
+    */
+    let (send, recv) = multiqueue::mpmc_queue(10);
+
+    for i in 0..10 {
+        let recv_clone = recv.clone();
+        let send_clone = send.clone();
+
+        thread::spawn(move || {
+            handle_stream_thread(i, send_clone, recv_clone);
+            println!("Thread {}: quitting", i);
+        });
+    }
+
+
     let listener = TcpListener::bind("0.0.0.0:8090").unwrap();
 
     // accept connections and process them serially
     for stream in listener.incoming() {
-        let mut s = stream.unwrap();
-        handle_client(&mut s);
+        let s = stream.unwrap();
+        s.set_nonblocking(true).expect("set_nonblocking call failed");
+        send.try_send(Arc::new(Mutex::new(s)));
     }
 }
